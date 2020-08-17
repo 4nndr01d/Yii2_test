@@ -4,14 +4,14 @@
 <a class="btn btn-primary" href="<?=Yii::$app->urlManager->createUrl(["site/add-product"])?>">Add new prodact</a >
 <br/>
 
-<table class="table">
-    <thead>
+<table class='table filtered-table' data-toggle="table" data-pagination="true" data-search="true"
+       data-page-size="25">    <thead>
     <tr>
-        <th scope="col">#</th>
-        <th scope="col">Name</th>
-        <th scope="col">Price</th>
-        <th scope="col">Available quantity</th>
-        <th scope="col">method</th>
+        <th data-sortable="true" data-field="id" scope="col">id</th>
+        <th data-sortable="true" data-field="name" scope="col">Name</th>
+        <th data-sortable="true" data-field="price" scope="col">Price &#8381;</th>
+        <th data-sortable="true" data-field="quantity" scope="col">Available quantity</th>
+        <th scope="col"></th>
     </tr>
     </thead>
     <tbody>
@@ -19,7 +19,7 @@
         <tr>
             <td scope="row"><?= Html::encode($product->id) ?></td>
             <td><?= Html::encode($product->name) ?></td>
-            <td><?= Html::encode($product->price) ?></td>
+            <td><?= Html::encode($product->price) ?> &#8381;</td>
             <td> <?= Html::encode($product->available_quantity) ?></td>
             <td>
                 <a class="btn btn-danger" href="<?=Yii::$app->urlManager->createUrl(["site/delete-product"])?>&id=<?=$product->id?>"><i class="glyphicon glyphicon-trash"></i></a>

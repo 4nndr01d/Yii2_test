@@ -20,6 +20,8 @@ return [
         ],
         'assetManager' => [
             'basePath' => __DIR__ . '/../web/assets',
+            'assetMap' => [
+            ],
         ],
         'urlManager' => [
             'showScriptName' => false,

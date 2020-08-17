@@ -196,12 +196,14 @@ class SiteController extends Controller
         foreach ($order_list as $order) {
             $positions = Position::find()->where(['order_id' => $order->id])->all();
             $order_arr[$order->id] = ['created'=>$order->created_at,'positions'=>[]];
+            $total_price = 0;
             foreach ($positions as $position) {
-                $product_name = Product::find()->where(['id' => $position->product_id])->one()->name;
-                $position_info = ['name'=>$product_name,'quantity'=>$position->quantity];
+                $product = Product::find()->where(['id' => $position->product_id])->one();
+                $total_price = $total_price + ($position->quantity * $product->price);
+                $position_info = ['name'=>$product->name,'quantity'=>$position->quantity];
                 array_push($order_arr[$order->id]['positions'],$position_info);
-
             }
+            $order_arr[$order->id]['total_price'] = $total_price;
         }
 //        echo '<pre>';
 //        print_r($order_arr);
@@ -227,11 +229,64 @@ class SiteController extends Controller
             return $this->redirect(['site/order-list']);
         } else {
             $product_list = Product::find()->all();
-            return $this->render('make_order_form', ['product_list' => $product_list]);
+            return $this->render('make_order_form', ['product_list' => $product_list, 'new_order' => true]);
 
 
         }
     }
 
+    public function actionEditOrder(){
+        if (Yii::$app->request->post()) {
+//            var_dump((Yii::$app->request->post())['Position']);
+
+            $positions = (Yii::$app->request->post())['Position'];
+            foreach ($positions as $position_id=>$quantity){
+                if($quantity){
+                    $edit_position = Position::find()->where(['id' => $position_id])->one();
+                    $edit_position->quantity = $quantity;
+                    $edit_position->update();
+                }else{
+                    $model = Position::find()->where(['id' => $position_id])->one();
+                    $model->delete();
+                }
+            }
+            $products = (Yii::$app->request->post())['Product'];
+            $order_id = (Yii::$app->request->post())['Order']['id'];
+
+            foreach ($products as $product_id=>$quantity){
+                if($quantity){
+                    $position = new Position();
+                    $position->product_id = $product_id;
+                    $position->quantity = $quantity;
+                    $position->order_id = $order_id;
+                    $position->save();
+                }
+            }
+            return $this->redirect(['site/order-list']);
+        } else {
+            $request = Yii::$app->request;
+            $id = $request->get('id');
+            $order = Order::find()->where(['id' => $id])->one();
+            $positions = Position::find()->where(['order_id' => $order->id])->all();
+            $total_price = 0;
+            foreach ($positions as $position) {
+                $product = Product::find()->where(['id' => $position->product_id])->one();
+                $total_price = $total_price + ($position->quantity * $product->price);
+                $position_info = ['name'=>$product->name,'price'=>$product->price,'available_quantity'=>$product->available_quantity,'quantity'=>$position->quantity];
+                $position_list['positions'][$position->id] = $position_info;
+            }
+            $products = Product::find()->all();
+
+            foreach ($products as $product){
+                if(!array_key_exists( $product->id , $position_list['positions'])){
+                    $product_info = ['name'=>$product->name,'price'=>$product->price,'available_quantity'=>$product->available_quantity,'quantity'=>0];
+                    $product_list['products'][$product->id] = $product_info;
+                }
+            }
+
+            return $this->render('make_order_form', ['positions' => $position_list,'products' => $product_list,'order_id'=>$order->id,'Product_model'=>new Product(),'Order'=>new Order(),'Position_model'=>new Position(), 'total_price' => $total_price, 'edit_order' => true]);
+        }
+
+    }
 
 }

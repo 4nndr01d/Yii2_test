@@ -22,6 +22,11 @@ class Position  extends ActiveRecord
     {
         return $this->hasMany(Product::className(), ['product_id' => 'id']);
     }
+    
+    public static function primaryKey()
+    {
+        return ['id'];
+    }
 
     public static function tableName()
     {
